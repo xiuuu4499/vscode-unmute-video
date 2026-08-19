@@ -302,3 +302,69 @@ function makeFfmpegError(message: string, stderr: string): Error {
 function isNoAudioStderr(stderr: string): boolean {
     return /does not contain any stream|matches no streams|output file is empty/i.test(stderr);
 }
+
+// ---------------------------------------------------------------------------
+// Clip segment extraction
+// ---------------------------------------------------------------------------
+
+/** Zero-pad a number to at least 2 digits. */
+function pad2(n: number): string {
+    return String(n).padStart(2, '0');
+}
+
+/**
+ * Convert a duration in seconds to `HH:MM:SS` (for ffmpeg `-ss`/`-to` args).
+ */
+function secondsToFfmpegTime(secs: number): string {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+}
+
+/**
+ * Convert a duration in seconds to `HH.MM.SS` (for use in the output filename).
+ */
+function secondsToFileSuffix(secs: number): string {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    return `${pad2(h)}.${pad2(m)}.${pad2(s)}`;
+}
+
+/**
+ * Build the output path for a clip:
+ * `<dir>/<basename>-clip-HH.MM.SS-HH.MM.SS<ext>`
+ * The directory and extension are taken from the source file.
+ */
+export function buildClipOutputPath(inputPath: string, startSec: number, endSec: number): string {
+    const dir = path.dirname(inputPath);
+    const ext = path.extname(inputPath);
+    const base = path.basename(inputPath, ext);
+    const startStr = secondsToFileSuffix(startSec);
+    const endStr = secondsToFileSuffix(endSec);
+    return path.join(dir, `${base}-clip-${startStr}-${endStr}${ext}`);
+}
+
+/**
+ * Extract a time-range segment from `input` into `output` using stream copy
+ * (no re-encoding). The `-ss`/`-to` flags are placed before `-i` for fast
+ * keyframe-based input seeking.
+ */
+export async function extractClipSegment(
+    ffmpeg: string,
+    input: string,
+    startSec: number,
+    endSec: number,
+    output: string,
+): Promise<void> {
+    await runFfmpeg(ffmpeg, [
+        '-nostdin',
+        '-ss', secondsToFfmpegTime(startSec),
+        '-to', secondsToFfmpegTime(endSec),
+        '-i', input,
+        '-c', 'copy',
+        '-y', output,
+    ]);
+}
+

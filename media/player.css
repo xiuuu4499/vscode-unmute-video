@@ -502,8 +502,103 @@ html, body {
   outline-offset: 1px;
 }
 
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  /* Keep pointer-events so the title tooltip is still reachable on hover */
+  pointer-events: auto;
+}
+
 .action-btn svg {
   display: block;
+}
+
+/* ---------- Clip extraction result ---------- */
+.clip-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  background: var(--info-bg);
+  border: 1px solid var(--info-bd);
+  color: var(--info-txt);
+}
+
+.clip-result-label {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Wrapper provides the positioning context for the dropdown */
+.clip-link-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+/* The path link — looks like an underlined hyperlink */
+.clip-result-link {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 420px;
+}
+
+.clip-result-link:hover {
+  color: var(--txt);
+}
+
+.clip-result-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Floating context menu */
+.clip-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  min-width: 200px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.clip-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  color: var(--txt);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s ease;
+}
+
+.clip-menu-item:hover {
+  background: var(--panel-2);
+}
+
+.clip-menu-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
 }
 
 /* ---------- Responsive ---------- */

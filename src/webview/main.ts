@@ -80,6 +80,21 @@ window.addEventListener("message", function (event: MessageEvent<HostToWebview>)
       pendingStatusAction = "trustWorkspace";
       setStatusAction("Trust workspace");
       break;
+
+    case "clipProgress":
+      if (msg.state === "running") {
+        showStatus("Extracting clip\u2026", "loading");
+        els.clipResult.hidden = true;
+        els.clipMenu.hidden = true;
+      } else if (msg.state === "done" && msg.relPath) {
+        clearStatus();
+        els.clipLink.textContent = msg.relPath;
+        els.clipResult.hidden = false;
+        els.clipMenu.hidden = true;
+      } else if (msg.state === "error") {
+        showStatus(msg.errorMessage ?? "Clip extraction failed", "warning");
+      }
+      break;
   }
 });
 
@@ -163,6 +178,13 @@ els.openExternalBtn.addEventListener("click", function () {
 els.copyPathBtn.addEventListener("click", function () {
   vscode.postMessage({ type: "action", name: "copyPath" });
 });
+els.extractClipBtn.addEventListener("click", function () {
+  const { a, b } = controller.getLoopPoints();
+  if (a === null || b === null) {
+    return;
+  }
+  vscode.postMessage({ type: "extractClip", startSec: a, endSec: b });
+});
 els.statusAction.addEventListener("click", function () {
   // Only act when the button is actually visible: a status can be cleared (and
   // the button hidden) without nulling pendingStatusAction, so guard on hidden
@@ -170,6 +192,24 @@ els.statusAction.addEventListener("click", function () {
   if (pendingStatusAction && !els.statusAction.hidden) {
     vscode.postMessage({ type: "action", name: pendingStatusAction });
   }
+});
+
+// ----- Clip result context menu -----
+els.clipLink.addEventListener("click", function (evt) {
+  evt.stopPropagation();
+  els.clipMenu.hidden = !els.clipMenu.hidden;
+});
+document.addEventListener("click", function () {
+  els.clipMenu.hidden = true;
+});
+els.clipOpenFolder.addEventListener("click", function () {
+  vscode.postMessage({ type: "action", name: "openClipFolder" });
+});
+els.clipReveal.addEventListener("click", function () {
+  vscode.postMessage({ type: "action", name: "revealClipInExplorer" });
+});
+els.clipPlay.addEventListener("click", function () {
+  vscode.postMessage({ type: "action", name: "playClip" });
 });
 
 // ----- Keyboard shortcuts -----

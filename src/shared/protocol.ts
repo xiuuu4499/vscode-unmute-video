@@ -28,10 +28,25 @@ export type HostToWebview =
     | { type: 'audioSrc'; url: string }
     | { type: 'audioNone' }
     | { type: 'audioError' }
-    | { type: 'audioUntrusted' };
+    | { type: 'audioUntrusted' }
+    | {
+        type: 'clipProgress';
+        state: 'running' | 'done' | 'error';
+        /** Workspace-relative output path (present when state is 'done'). */
+        relPath?: string;
+        /** Human-readable error detail (present when state is 'error'). */
+        errorMessage?: string;
+    };
 
 /** Actions the webview can ask the host to perform. */
-export type WebviewAction = 'openExternal' | 'copyPath' | 'trustWorkspace' | 'openFfmpegSettings';
+export type WebviewAction =
+    | 'openExternal'
+    | 'copyPath'
+    | 'trustWorkspace'
+    | 'openFfmpegSettings'
+    | 'openClipFolder'
+    | 'revealClipInExplorer'
+    | 'playClip';
 
 /** Messages the webview sends to the extension host. */
 export type WebviewToHost =
@@ -39,4 +54,6 @@ export type WebviewToHost =
     | { type: 'progress'; time: number }
     | { type: 'error'; message: string }
     | { type: 'action'; name: WebviewAction }
-    | { type: 'savePreferences'; preferences: Preferences };
+    | { type: 'savePreferences'; preferences: Preferences }
+    | { type: 'extractClip'; startSec: number; endSec: number };
+

@@ -37,4 +37,12 @@ export const els = {
 
   openExternalBtn: document.getElementById("openExternalBtn") as HTMLButtonElement,
   copyPathBtn: document.getElementById("copyPathBtn") as HTMLButtonElement,
+  extractClipBtn: document.getElementById("extractClipBtn") as HTMLButtonElement,
+
+  clipResult: document.getElementById("clipResult") as HTMLElement,
+  clipLink: document.getElementById("clipLink") as HTMLButtonElement,
+  clipMenu: document.getElementById("clipMenu") as HTMLElement,
+  clipOpenFolder: document.getElementById("clipOpenFolder") as HTMLButtonElement,
+  clipReveal: document.getElementById("clipReveal") as HTMLButtonElement,
+  clipPlay: document.getElementById("clipPlay") as HTMLButtonElement,
 };

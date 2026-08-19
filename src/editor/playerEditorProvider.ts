@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { StreamServer } from '../server/streamServer';
 import { AudioExtractionController } from './audioExtractionController';
+import { buildClipOutputPath, extractClipSegment, findFfmpeg, resolveFfmpegOverride } from '../media/audio';
 import { isNativeAudioFormat } from '../media/mediaFormat';
 import { resolveSeekStep } from '../shared/config';
 import { clampPreferences } from '../shared/preferences';
@@ -67,6 +68,8 @@ export class PlayerEditorProvider implements vscode.CustomReadonlyEditorProvider
         const videoUrl = this.server.urlFor(videoToken);
         let handledReady = false;
         let trustListener: vscode.Disposable | undefined;
+        let clipExtracting = false;
+        let lastClipPath: string | undefined;
 
         // Outgoing messages are checked against the shared protocol type.
         const post = (message: HostToWebview): void => {
@@ -172,6 +175,27 @@ export class PlayerEditorProvider implements vscode.CustomReadonlyEditorProvider
                                 void vscode.window.showWarningMessage('Unmute Video: could not open settings.');
                             });
                             break;
+                        case 'openClipFolder':
+                            if (lastClipPath !== undefined) {
+                                void vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(lastClipPath));
+                            }
+                            break;
+                        case 'revealClipInExplorer':
+                            if (lastClipPath !== undefined) {
+                                void vscode.commands.executeCommand('revealInExplorer', vscode.Uri.file(lastClipPath));
+                            }
+                            break;
+                        case 'playClip':
+                            if (lastClipPath !== undefined) {
+                                void vscode.commands.executeCommand(
+                                    'vscode.openWith',
+                                    vscode.Uri.file(lastClipPath),
+                                    PlayerEditorProvider.viewType,
+                                ).then(undefined, () => {
+                                    void vscode.window.showWarningMessage('Unmute Video: could not open clip.');
+                                });
+                            }
+                            break;
                         default:
                             console.warn(`Unmute Video: ignoring unknown webview action "${String(message.name)}"`);
                             break;
@@ -181,6 +205,41 @@ export class PlayerEditorProvider implements vscode.CustomReadonlyEditorProvider
 
                 case 'savePreferences': {
                     void this.context.globalState.update(PREFS_KEY, clampPreferences(message.preferences));
+                    break;
+                }
+
+                case 'extractClip': {
+                    if (clipExtracting) {
+                        break; // silently ignore concurrent requests
+                    }
+                    const { startSec, endSec } = message;
+                    if (!Number.isFinite(startSec) || !Number.isFinite(endSec) || endSec <= startSec) {
+                        break;
+                    }
+                    clipExtracting = true;
+                    post({ type: 'clipProgress', state: 'running' });
+                    void (async () => {
+                        try {
+                            const config = vscode.workspace.getConfiguration('unmuteVideo');
+                            const workspaceRoots = (vscode.workspace.workspaceFolders ?? []).map((f) => f.uri.fsPath);
+                            const override = resolveFfmpegOverride(config.get<string>('ffmpegPath'), workspaceRoots);
+                            const ffmpeg = await findFfmpeg(override);
+                            if (ffmpeg === null) {
+                                post({ type: 'clipProgress', state: 'error', errorMessage: 'ffmpeg not found. Install it or set its path in Settings.' });
+                                return;
+                            }
+                            const outPath = buildClipOutputPath(fsPath, startSec, endSec);
+                            await extractClipSegment(ffmpeg, fsPath, startSec, endSec, outPath);
+                            lastClipPath = outPath;
+                            const relPath = vscode.workspace.asRelativePath(outPath);
+                            post({ type: 'clipProgress', state: 'done', relPath });
+                        } catch (err) {
+                            const msg = err instanceof Error ? err.message : String(err);
+                            post({ type: 'clipProgress', state: 'error', errorMessage: `Clip extraction failed: ${msg}` });
+                        } finally {
+                            clipExtracting = false;
+                        }
+                    })();
                     break;
                 }
 

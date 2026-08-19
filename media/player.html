@@ -112,6 +112,20 @@
       <button class="status-action" id="statusAction" type="button" hidden></button>
     </div>
 
+    <!-- Clip extraction result -->
+    <div class="clip-result" id="clipResult" hidden>
+      <span class="clip-result-label">Clip saved:</span>
+      <div class="clip-link-wrap">
+        <button class="clip-result-link" id="clipLink" type="button" aria-haspopup="true"
+                title="Click to open actions menu"></button>
+        <div class="clip-menu" id="clipMenu" role="menu" hidden>
+          <button class="clip-menu-item" id="clipOpenFolder" type="button" role="menuitem">Open Containing Folder</button>
+          <button class="clip-menu-item" id="clipReveal"     type="button" role="menuitem">Reveal in Explorer</button>
+          <button class="clip-menu-item" id="clipPlay"       type="button" role="menuitem">&#9654; Play Now</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Action row -->
     <div class="actions" id="actions">
       <button class="action-btn" id="openExternalBtn" type="button">
@@ -121,6 +135,11 @@
       <button class="action-btn" id="copyPathBtn" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z" fill="currentColor"></path></svg>
         Copy file path
+      </button>
+      <button class="action-btn" id="extractClipBtn" type="button" disabled
+              title="Extract the A\u2192B range as a new clip file (set both A and B markers to enable)">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3h-3z" fill="currentColor"></path></svg>
+        Extract clip A\u2192B
       </button>
     </div>
 

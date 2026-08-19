@@ -344,6 +344,11 @@ export class PlayerController {
     this.refreshLoopUi();
   }
 
+  /** Returns the current A and B loop timestamps (seconds), or null if unset. */
+  public getLoopPoints(): { a: number | null; b: number | null } {
+    return { a: this.loop.a, b: this.loop.b };
+  }
+
   public clearLoop(): void {
     this.loop = { a: null, b: null, whole: false, duration: els.video.duration };
     this.refreshLoopUi();
@@ -608,6 +613,7 @@ export class PlayerController {
     els.loopBtn.setAttribute("aria-pressed", this.loop.whole ? "true" : "false");
     els.setABtn.classList.toggle("is-active", this.loop.a !== null);
     els.setBBtn.classList.toggle("is-active", this.loop.b !== null);
+    els.extractClipBtn.disabled = !(this.loop.a !== null && this.loop.b !== null);
   }
 
   private applyLoop(resumeAfterSeek: boolean): boolean {
