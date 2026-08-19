@@ -306,6 +306,13 @@ export class PlayerController {
   }
 
   public setLoopA(): void {
+    if (this.loop.a !== null) {
+      // Toggle off: clear A (and B, since B requires A)
+      this.loop.a = null;
+      this.loop.b = null;
+      this.refreshLoopUi();
+      return;
+    }
     const a = els.video.currentTime;
     this.loop.a = a;
     if (this.loop.b !== null && this.loop.b <= a) {
@@ -315,6 +322,12 @@ export class PlayerController {
   }
 
   public setLoopB(): void {
+    if (this.loop.b !== null) {
+      // Toggle off: clear just B
+      this.loop.b = null;
+      this.refreshLoopUi();
+      return;
+    }
     if (this.loop.a === null) {
       return;
     }
