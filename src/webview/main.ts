@@ -156,20 +156,34 @@ function togglePip(): void {
 }
 els.pipBtn.addEventListener("click", togglePip);
 
-// ----- Fullscreen -----
+// ----- Fullscreen (CSS overlay) -----
+// The native Fullscreen API is blocked inside VS Code webview iframes.
+// Instead we toggle .player.is-fullscreen which positions the stage and
+// controls as fixed overlays covering the entire webview viewport.
+let isFakeFullscreen = false;
+
+function enterFakeFullscreen(): void {
+  isFakeFullscreen = true;
+  els.player.classList.add("is-fullscreen");
+  els.fsBtn.setAttribute("aria-pressed", "true");
+  document.body.classList.add("is-fake-fs");
+}
+
+function exitFakeFullscreen(): void {
+  isFakeFullscreen = false;
+  els.player.classList.remove("is-fullscreen");
+  els.fsBtn.setAttribute("aria-pressed", "false");
+  document.body.classList.remove("is-fake-fs");
+}
+
 function toggleFullscreen(): void {
-  if (document.fullscreenElement) {
-    document.exitFullscreen().catch(function () {});
-  } else if (els.stage.requestFullscreen) {
-    els.stage.requestFullscreen().catch(function () {});
+  if (isFakeFullscreen) {
+    exitFakeFullscreen();
+  } else {
+    enterFakeFullscreen();
   }
 }
 els.fsBtn.addEventListener("click", toggleFullscreen);
-document.addEventListener("fullscreenchange", function () {
-  const isFs = !!document.fullscreenElement;
-  els.player.classList.toggle("is-fullscreen", isFs);
-  els.fsBtn.setAttribute("aria-pressed", isFs ? "true" : "false");
-});
 
 // ----- Action row -----
 els.openExternalBtn.addEventListener("click", function () {
@@ -272,6 +286,13 @@ document.addEventListener("keydown", function (evt) {
     case "f":
     case "F":
       toggleFullscreen();
+      break;
+    case "Escape":
+      if (isFakeFullscreen) {
+        exitFakeFullscreen();
+      } else {
+        handled = false;
+      }
       break;
     default:
       handled = false;

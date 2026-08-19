@@ -80,6 +80,64 @@ html, body {
   height: 100vh;
 }
 
+/* === Fake fullscreen (CSS overlay) ===
+   Active when .player.is-fullscreen is toggled by JS (native API not available
+   in VS Code webview iframes). The stage and overlay controls are positioned
+   fixed so they cover the entire webview viewport. */
+
+body.is-fake-fs {
+  overflow: hidden;
+}
+
+.player.is-fullscreen .stage {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  border-radius: 0;
+  /* Override the normal max-height so the stage really fills the viewport */
+  max-height: none;
+}
+
+.player.is-fullscreen .stage #video {
+  max-height: 100vh;
+  height: 100vh;
+}
+
+/* Seek bar floats above the controls strip */
+.player.is-fullscreen .seek {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  padding: 4px 16px 8px;
+  /* Gradient so the bright seek track is readable over the video */
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+}
+
+/* Controls strip at the very bottom */
+.player.is-fullscreen .controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 201;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  background: rgba(12, 14, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Hide the non-video UI during fake fullscreen */
+.player.is-fullscreen .status,
+.player.is-fullscreen .clip-result,
+.player.is-fullscreen .actions {
+  display: none !important;
+}
+
 /* Filename overlay */
 .file-label {
   position: absolute;
