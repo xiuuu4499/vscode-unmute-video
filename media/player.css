@@ -24,6 +24,13 @@
   box-sizing: border-box;
 }
 
+/* Enforce the hidden attribute — author-stylesheet display: flex/etc. would
+   otherwise override the UA-level display: none that [hidden] is supposed to
+   provide. This one rule fixes visibility for all elements that use hidden. */
+[hidden] {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;
